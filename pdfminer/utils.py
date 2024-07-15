@@ -1,12 +1,12 @@
-"""
-Miscellaneous Routines.
-"""
+"""Miscellaneous Routines."""
+
 import io
 import pathlib
 import string
 import struct
 from html import escape
 from typing import (
+    TYPE_CHECKING,
     Any,
     BinaryIO,
     Callable,
@@ -21,14 +21,13 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
-    TYPE_CHECKING,
     cast,
 )
 
-from .pdfexceptions import PDFTypeError, PDFValueError
+from pdfminer.pdfexceptions import PDFTypeError, PDFValueError
 
 if TYPE_CHECKING:
-    from .layout import LTComponent
+    from pdfminer.layout import LTComponent
 
 import charset_normalizer  # For str encoding detection
 
@@ -41,9 +40,8 @@ FileOrName = Union[pathlib.PurePath, str, io.IOBase]
 AnyIO = Union[TextIO, BinaryIO]
 
 
-class open_filename(object):
-    """
-    Context manager that allows opening a filename
+class open_filename:
+    """Context manager that allows opening a filename
     (str or pathlib.PurePath type is supported) and closes it on exit,
     (just like `open`), but does nothing for file-like objects.
     """
@@ -69,7 +67,7 @@ class open_filename(object):
 
 
 def make_compat_bytes(in_str: str) -> bytes:
-    "Converts to bytes, encoding to unicode."
+    """Converts to bytes, encoding to unicode."""
     assert isinstance(in_str, str), str(type(in_str))
     return in_str.encode()
 
@@ -91,13 +89,15 @@ def shorten_str(s: str, size: int) -> str:
         return s[:size]
     if len(s) > size:
         length = (size - 5) // 2
-        return "{} ... {}".format(s[:length], s[-length:])
+        return f"{s[:length]} ... {s[-length:]}"
     else:
         return s
 
 
 def compatible_encode_method(
-    bytesorstring: Union[bytes, str], encoding: str = "utf-8", erraction: str = "ignore"
+    bytesorstring: Union[bytes, str],
+    encoding: str = "utf-8",
+    erraction: str = "ignore",
 ) -> str:
     """When Py2 str.encode is called, it often means bytes.encode in Py3.
 
@@ -128,7 +128,11 @@ def paeth_predictor(left: int, above: int, upper_left: int) -> int:
 
 
 def apply_png_predictor(
-    pred: int, colors: int, columns: int, bitspercomponent: int, data: bytes
+    pred: int,
+    colors: int,
+    columns: int,
+    bitspercomponent: int,
+    data: bytes,
 ) -> bytes:
     """Reverse the effect of the PNG predictor
 
@@ -173,7 +177,7 @@ def apply_png_predictor(
             #   Raw(x) = Up(x) + Prior(x)
             # (computed mod 256), where Prior() refers to the decoded bytes of
             # the prior scanline.
-            for (up_x, prior_x) in zip(line_encoded, line_above):
+            for up_x, prior_x in zip(line_encoded, line_above):
                 raw_x = (up_x + prior_x) & 255
                 raw.append(raw_x)
 
@@ -238,6 +242,14 @@ PathSegment = Union[
 MATRIX_IDENTITY: Matrix = (1, 0, 0, 1, 0, 0)
 
 
+def parse_rect(o: Any) -> Rect:
+    try:
+        (x0, y0, x1, y1) = o
+        return float(x0), float(y0), float(x1), float(y1)
+    except ValueError:
+        raise PDFValueError("Could not parse rectangle")
+
+
 def mult_matrix(m1: Matrix, m0: Matrix) -> Matrix:
     (a1, b1, c1, d1, e1, f1) = m1
     (a0, b0, c0, d0, e0, f0) = m0
@@ -291,7 +303,6 @@ def uniq(objs: Iterable[_T]) -> Iterator[_T]:
             continue
         done.add(obj)
         yield obj
-    return
 
 
 def fsplit(pred: Callable[[_T], bool], objs: Iterable[_T]) -> Tuple[List[_T], List[_T]]:
@@ -315,7 +326,7 @@ def get_bound(pts: Iterable[Point]) -> Rect:
     """Compute a minimal rectangle that covers all the points."""
     limit: Rect = (INF, INF, -INF, -INF)
     (x0, y0, x1, y1) = limit
-    for (x, y) in pts:
+    for x, y in pts:
         x0 = min(x0, x)
         y0 = min(y0, y)
         x1 = max(x1, x)
@@ -324,7 +335,9 @@ def get_bound(pts: Iterable[Point]) -> Rect:
 
 
 def pick(
-    seq: Iterable[_T], func: Callable[[_T], float], maxobj: Optional[_T] = None
+    seq: Iterable[_T],
+    func: Callable[[_T], float],
+    maxobj: Optional[_T] = None,
 ) -> Optional[_T]:
     """Picks the object obj where func(obj) has the highest value."""
     maxscore = None
@@ -343,7 +356,6 @@ def choplist(n: int, seq: Iterable[_T]) -> Iterator[Tuple[_T, ...]]:
         if len(r) == n:
             yield tuple(r)
             r = []
-    return
 
 
 def nunpack(s: bytes, default: int = 0) -> int:
@@ -645,12 +657,12 @@ def enc(x: str) -> str:
 
 def bbox2str(bbox: Rect) -> str:
     (x0, y0, x1, y1) = bbox
-    return "{:.3f},{:.3f},{:.3f},{:.3f}".format(x0, y0, x1, y1)
+    return f"{x0:.3f},{y0:.3f},{x1:.3f},{y1:.3f}"
 
 
 def matrix2str(m: Matrix) -> str:
     (a, b, c, d, e, f) = m
-    return "[{:.2f},{:.2f},{:.2f},{:.2f}, ({:.2f},{:.2f})]".format(a, b, c, d, e, f)
+    return f"[{a:.2f},{b:.2f},{c:.2f},{d:.2f}, ({e:.2f},{f:.2f})]"
 
 
 def vecBetweenBoxes(obj1: "LTComponent", obj2: "LTComponent") -> Point:
@@ -726,7 +738,7 @@ class Plane(Generic[LTComponentT]):
             self.add(obj)
 
     def add(self, obj: LTComponentT) -> None:
-        """place an object."""
+        """Place an object."""
         for k in self._getrange((obj.x0, obj.y0, obj.x1, obj.y1)):
             if k not in self._grid:
                 r: List[LTComponentT] = []
@@ -738,7 +750,7 @@ class Plane(Generic[LTComponentT]):
         self._objs.add(obj)
 
     def remove(self, obj: LTComponentT) -> None:
-        """displace an object."""
+        """Displace an object."""
         for k in self._getrange((obj.x0, obj.y0, obj.x1, obj.y1)):
             try:
                 self._grid[k].remove(obj)
@@ -747,7 +759,7 @@ class Plane(Generic[LTComponentT]):
         self._objs.remove(obj)
 
     def find(self, bbox: Rect) -> Iterator[LTComponentT]:
-        """finds objects that are in a certain area."""
+        """Finds objects that are in a certain area."""
         (x0, y0, x1, y1) = bbox
         done = set()
         for k in self._getrange(bbox):
@@ -768,7 +780,6 @@ ROMAN_FIVES = ["v", "l", "d"]
 
 def format_int_roman(value: int) -> str:
     """Format a number as lowercase Roman numerals."""
-
     assert 0 < value < 4000
     result: List[str] = []
     index = 0
@@ -794,7 +805,6 @@ def format_int_roman(value: int) -> str:
 
 def format_int_alpha(value: int) -> str:
     """Format a number as lowercase letters a-z, aa-zz, etc."""
-
     assert value > 0
     result: List[str] = []
 

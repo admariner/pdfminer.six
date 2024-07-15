@@ -5,10 +5,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Using absolute instead of relative imports ([[#995](https://github.com/pdfminer/pdfminer.six/pull/995)])
+
+### Deprecated
+
+- The third argument (generation number) to `PDFObjRef` ([#972](https://github.com/pdfminer/pdfminer.six/pull/972))
+
+### Fixed
+
+- `TypeError` when corrupt PDF object reference cannot be parsed as int ([#972](https://github.com/pdfminer/pdfminer.six/pull/972))])
+- `TypeError` when corrupt PDF literal cannot be converted to str ([#978](https://github.com/pdfminer/pdfminer.six/pull/978))
+- `ValueError` when corrupt PDF specifies a negative xref location ([#980](http://github.com/pdfminer/pdfminer.six/pull/980))
+- `ValueError` when corrupt PDF specifies an invalid mediabox ([#987](https://github.com/pdfminer/pdfminer.six/pull/987))
+- `RecursionError` when corrupt PDF specifies a recursive /Pages object ([#998](https://github.com/pdfminer/pdfminer.six/pull/998))
+- `TypeError` when corrupt PDF specifies text-positioning operators with invalid values ([#1000](https://github.com/pdfminer/pdfminer.six/pull/1000))
+- inline image parsing fails when stream data contains "EI\n" ([#1008](https://github.com/pdfminer/pdfminer.six/issues/1008))
+
+### Removed
+
+- Deprecated tools, functions and classes ([#974](https://github.com/pdfminer/pdfminer.six/pull/974))
+
+## [20240706]
+
 ### Added
 
 - Support for zipped jpeg's ([#938](https://github.com/pdfminer/pdfminer.six/pull/938))
-
 - Fuzzing harnesses for integration into Google's OSS-Fuzz ([949](https://github.com/pdfminer/pdfminer.six/pull/949))
 - Support for setuptools-git-versioning version 2.0.0 ([#957](https://github.com/pdfminer/pdfminer.six/pull/957))
 
@@ -20,6 +43,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Resolve stream filter parameters ([#906](https://github.com/pdfminer/pdfminer.six/pull/906))
 - Reading cmap's with whitespace in the name ([#935](https://github.com/pdfminer/pdfminer.six/pull/935))
 - Optimize `apply_png_predictor` by using lists ([#912](https://github.com/pdfminer/pdfminer.six/pull/912))
+
+### Changed
+
+- Updated Python 3.7 syntax to 3.8 ([#956](https://github.com/pdfminer/pdfminer.six/pull/956))
+- Updated all Python version specifications to a minimum of 3.8 ([#969](https://github.com/pdfminer/pdfminer.six/pull/969))
 
 ## [20231228]
 
